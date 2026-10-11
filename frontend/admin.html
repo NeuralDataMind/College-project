@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin & ML Console | Smart Inventory Forecasting</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --card-bg: #1e293b;
+      --card-inner: #0f172a;
+      --border: #334155;
+      --primary: #a78bfa;
+      --primary-hover: #8b5cf6;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --success: #34d399;
+      --danger: #f87171;
+      --info: #38bdf8;
+      --warning: #fb923c;
+    }
+
+    * { box-sizing: border-box; }
+    
+    body {
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: var(--bg-dark);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    nav.navbar {
+      background: #1e293b;
+      border-bottom: 1px solid var(--border);
+      padding: 12px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin: 0;
+    }
+    .role-tag {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(167, 139, 250, 0.15);
+      color: var(--primary);
+      border: 1px solid rgba(167, 139, 250, 0.3);
+      text-transform: uppercase;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--card-bg);
+      color: var(--text);
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn:hover { background: #334155; }
+    .btn-primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #0f172a;
+    }
+    .btn-primary:hover { background: var(--primary-hover); color: white; }
+    .btn-danger {
+      color: var(--danger);
+      border-color: rgba(248, 113, 113, 0.3);
+    }
+    .btn-danger:hover { background: rgba(248, 113, 113, 0.15); }
+
+    .main-wrap {
+      max-width: 1300px;
+      margin: auto;
+      padding: 24px 24px 60px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 22px;
+    }
+    .card-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin: 0;
+    }
+    .card-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin: 3px 0 0;
+    }
+
+    /* Diagnostics 3-column Grid */
+    .admin-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .telemetry-card {
+      background: var(--card-inner);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+    }
+    .metric-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.85rem;
+    }
+    .metric-row:last-child { border-bottom: none; }
+    .metric-title { color: var(--text-muted); }
+    .metric-value { font-weight: 700; font-family: monospace; }
+
+    /* Inputs */
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .input-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+    .form-select, .form-input {
+      background: var(--card-inner);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 9px 12px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      outline: none;
+    }
+    .form-select:focus, .form-input:focus {
+      border-color: var(--primary);
+    }
+
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+    }
+    table.data-table th {
+      padding: 10px 12px;
+      text-align: left;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+    }
+    table.data-table td {
+      padding: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="brand-section">
+      <span style="font-size: 1.4rem;">⚙️</span>
+      <div>
+        <h2 class="brand-title">Admin & ML Platform Console</h2>
+      </div>
+      <span class="role-tag">ML Administrator</span>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:10px;">
+      <a href="manager.html" class="btn">
+        <span>👤</span> View Store Ops
+      </a>
+      <a href="all-products.html" target="_blank" class="btn">
+        <span>📊</span> All Catalog SKUs ↗
+      </a>
+      <div style="display:flex; align-items:center; gap:6px; background:var(--card-inner); padding:6px 12px; border-radius:8px; border:1px solid var(--border); font-size:0.85rem;">
+        <span>⚙️</span>
+        <span id="admUserName" style="font-weight:600;">Alex Rivera (Admin)</span>
+      </div>
+      <button class="btn btn-danger" onclick="signOut()">Sign Out</button>
+    </div>
+  </nav>
+
+  <div class="main-wrap">
+
+    <!-- Section 1: ML Telemetry & Diagnostics -->
+    <div class="card">
+      <div class="card-header-row">
+        <div>
+          <h3 class="card-title">Live ML Telemetry & System Diagnostics</h3>
+          <p class="card-subtitle">Real-time monitoring of XGBoost Regressor, TreeSHAP Explainer and API Microservices</p>
+        </div>
+        <button class="btn btn-primary" onclick="loadAdminTelemetry()">🔄 Refresh Diagnostics</button>
+      </div>
+
+      <div class="admin-grid">
+        <!-- Model Engine Card -->
+        <div class="telemetry-card">
+          <h4 style="margin: 0 0 10px; color: var(--info); font-size:0.95rem;">🧠 Machine Learning Model</h4>
+          <div class="metric-row">
+            <span class="metric-title">Model Architecture</span>
+            <span class="metric-value" id="admEngine">XGBRegressor</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-title">Active One-Hot Features</span>
+            <span class="metric-value" id="admFeatures">22 Columns</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-title">XAI Explainer</span>
+            <span class="metric-value">TreeSHAP</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-title">Inference Latency</span>
+            <span class="metric-value" id="admLatency" style="color:var(--success);">12.5 ms</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-title">Inference Requests Served</span>
+            <span class="metric-value" id="admRequests">-- calls</span>
+          </div>
+        </div>
+
+        <!-- Hyperparameters Card -->
+        <div class="telemetry-card">
+          <h4 style="margin: 0 0 10px; color: var(--primary); font-size:0.95rem;">⚙️ Current Hyperparameters</h4>
+          <div class="metric-row">
+            <span class="metric-title">Number of Estimators</span>
+            <span class="metric-value" id="admEstimators">100</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-title">Max Tree Depth</span>
+            <span class="metric-value" id="admDepth">5</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-title">Learning Rate (Eta)</span>
+            <span class="metric-value" id="admLR">0.05</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-title">Random State</span>
+            <span class="metric-value">42</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-title">Training Data Size</span>
+            <span class="metric-value">5,000 samples</span>
+          </div>
+        </div>
+
+        <!-- System Services Card -->
+        <div class="telemetry-card">
+          <h4 style="margin: 0 0 10px; color: var(--warning); font-size:0.95rem;">🖥️ Infrastructure Services</h4>
+          <div class="metric-row">
+            <span class="metric-title">FastAPI Microservice</span>
+            <span class="metric-value" style="color:var(--success);">Port 8000 (Active)</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-title">Express API Gateway</span>
+            <span class="metric-value" style="color:var(--success);">Port 5000 (Active)</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-title">Database Status</span>
+            <span class="metric-value" id="admDb">Active</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-title">Node.js Memory Footprint</span>
+            <span class="metric-value" id="admMem">-- MB</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-title">Server Uptime</span>
+            <span class="metric-value" id="admUptime">-- sec</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: On-Demand Hyperparameter Tuning & Retraining -->
+    <div class="card">
+      <div class="card-header-row">
+        <div>
+          <h3 class="card-title">⚡ On-Demand Hyperparameter Tuning & Model Retraining</h3>
+          <p class="card-subtitle">Retrain and hot-swap both XGBoost & TreeSHAP models in memory without service downtime</p>
+        </div>
+      </div>
+
+      <div style="background: var(--card-inner); padding: 18px; border-radius: 8px; border: 1px solid var(--border);">
+        <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:flex-end;">
+          <div class="input-group">
+            <label class="input-label">Number of Estimators</label>
+            <input type="number" id="tuneEstimators" class="form-input" value="100" style="width:140px;">
+          </div>
+          <div class="input-group">
+            <label class="input-label">Max Tree Depth</label>
+            <input type="number" id="tuneDepth" class="form-input" value="5" style="width:120px;">
+          </div>
+          <div class="input-group">
+            <label class="input-label">Learning Rate</label>
+            <input type="number" step="0.01" id="tuneLR" class="form-input" value="0.05" style="width:140px;">
+          </div>
+          <button class="btn btn-primary" onclick="triggerRetrain()" style="padding:10px 20px;">
+            🚀 Retrain & Hot-Swap Model
+          </button>
+        </div>
+        <div id="retrainStatusMsg" style="margin-top:12px; font-size:0.85rem; color:var(--text-muted);"></div>
+      </div>
+    </div>
+
+    <!-- Section 3: Warehouse Inventory Batches Manager -->
+    <div class="card">
+      <div class="card-header-row">
+        <div>
+          <h3 class="card-title">Warehouse Inventory Batches Management (FEFO)</h3>
+          <p class="card-subtitle">Manage First-Expiring-First-Out batches used by the stockout engine</p>
+        </div>
+      </div>
+
+      <!-- Add Batch Form -->
+      <form onsubmit="handleCreateBatch(event)" style="background: var(--card-inner); padding: 16px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 18px;">
+        <div style="font-weight:700; font-size:0.8rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:10px;">Add New Inventory Batch:</div>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap:12px;">
+          <div class="input-group">
+            <label class="input-label">Product SKU</label>
+            <select id="newBatchProduct" class="form-select" required>
+              <option value="Dairy_Milk_1L">Dairy_Milk_1L</option>
+              <option value="Dairy_Paneer_200g">Dairy_Paneer_200g</option>
+              <option value="Produce_Tomatoes_500g">Produce_Tomatoes_500g</option>
+              <option value="Produce_Bananas_1dz">Produce_Bananas_1dz</option>
+              <option value="Snacks_Chips_100g">Snacks_Chips_100g</option>
+              <option value="Beverages_ColdDrink_2L">Beverages_ColdDrink_2L</option>
+              <option value="Meat_Chicken_500g">Meat_Chicken_500g</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Batch ID</label>
+            <input type="text" id="newBatchNumber" class="form-input" placeholder="BATCH-2026-X" required>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Quantity (Units)</label>
+            <input type="number" id="newBatchQuantity" class="form-input" value="100" min="1" required>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Price ($)</label>
+            <input type="number" step="0.5" id="newBatchPrice" class="form-input" value="14.5" required>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Days to Expiration</label>
+            <input type="number" id="newBatchDays" class="form-input" value="7" min="1" required>
+          </div>
+          <div class="input-group" style="justify-content: flex-end;">
+            <button type="submit" class="btn btn-primary" style="width:100%; padding: 10px;">
+              + Add Batch
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <!-- Batches Table -->
+      <div style="overflow-x: auto;">
+        <table class="data-table" id="batchesTable">
+          <thead>
+            <tr>
+              <th>Batch ID</th>
+              <th>Product SKU</th>
+              <th>Category</th>
+              <th>Quantity</th>
+              <th>Price</th>
+              <th>Expiration Date</th>
+            </tr>
+          </thead>
+          <tbody id="batchesTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Role Security Guard
+    const authRole = localStorage.getItem('auth_role');
+    if (authRole !== 'admin') {
+      alert('Access Restricted: Administrator authorization required.');
+      window.location.href = 'login.html';
+    }
+
+    async function apiFetch(endpoint, options = {}) {
+      try {
+        return await fetch(`http://127.0.0.1:5000${endpoint}`, options);
+      } catch (err) {
+        return await fetch(`http://localhost:5000${endpoint}`, options);
+      }
+    }
+
+    function signOut() {
+      localStorage.clear();
+      window.location.href = 'login.html';
+    }
+
+    async function loadAdminTelemetry() {
+      try {
+        const res = await apiFetch('/api/v1/admin/telemetry');
+        const data = await res.json();
+
+        if (data.mlMicroservice) {
+          const ml = data.mlMicroservice;
+          document.getElementById('admEngine').innerText = ml.engine || 'XGBoost Regressor';
+          document.getElementById('admFeatures').innerText = (ml.features_count || 22) + ' Columns';
+          document.getElementById('admLatency').innerText = (ml.average_latency_ms || 12.5) + ' ms';
+          document.getElementById('admRequests').innerText = (ml.total_requests_served || 0) + ' calls';
+
+          if (ml.hyperparameters) {
+            document.getElementById('admEstimators').innerText = ml.hyperparameters.n_estimators || 100;
+            document.getElementById('admDepth').innerText = ml.hyperparameters.max_depth || 5;
+            document.getElementById('admLR').innerText = ml.hyperparameters.learning_rate || 0.05;
+          }
+        }
+
+        if (data.system) {
+          document.getElementById('admMem').innerText = data.system.memoryUsageMB + ' MB';
+          document.getElementById('admUptime').innerText = data.system.uptimeSeconds + ' sec';
+        }
+        if (data.database) {
+          document.getElementById('admDb').innerText = data.database.status;
+        }
+
+        loadBatchesTable();
+      } catch (e) {
+        console.warn('Telemetry error:', e);
+      }
+    }
+
+    async function triggerRetrain() {
+      const n_estimators = parseInt(document.getElementById('tuneEstimators').value, 10);
+      const max_depth = parseInt(document.getElementById('tuneDepth').value, 10);
+      const learning_rate = parseFloat(document.getElementById('tuneLR').value);
+      const statusMsg = document.getElementById('retrainStatusMsg');
+
+      statusMsg.innerHTML = '⏳ Retraining model on 5,000 quick-commerce dataset samples...';
+
+      try {
+        const res = await apiFetch('/api/v1/admin/retrain', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ n_estimators, max_depth, learning_rate })
+        });
+        const result = await res.json();
+        statusMsg.innerHTML = `✅ <strong>Retraining Complete!</strong> Duration: ${result.duration_seconds}s. Model & TreeSHAP explainer hot-swapped in memory.`;
+        loadAdminTelemetry();
+      } catch (err) {
+        statusMsg.innerHTML = `❌ Retraining failed: ${err.message}`;
+      }
+    }
+
+    async function loadBatchesTable() {
+      try {
+        const res = await apiFetch('/api/v1/admin/batches');
+        const data = await res.json();
+        const tbody = document.getElementById('batchesTableBody');
+        tbody.innerHTML = '';
+
+        (data.batches || []).forEach(b => {
+          const tr = document.createElement('tr');
+          const expDate = new Date(b.expirationDate).toLocaleDateString();
+          tr.innerHTML = `
+            <td><strong>${b.batchNumber}</strong></td>
+            <td>${b.productId}</td>
+            <td>${b.category}</td>
+            <td style="color:var(--info); font-weight:bold;">${b.quantity}</td>
+            <td>$${b.price.toFixed(2)}</td>
+            <td>${expDate}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.warn('Batches load error:', err);
+      }
+    }
+
+    async function handleCreateBatch(e) {
+      e.preventDefault();
+      const productId = document.getElementById('newBatchProduct').value;
+      const batchNumber = document.getElementById('newBatchNumber').value.trim();
+      const quantity = parseInt(document.getElementById('newBatchQuantity').value, 10);
+      const price = parseFloat(document.getElementById('newBatchPrice').value);
+      const expirationDays = parseInt(document.getElementById('newBatchDays').value, 10);
+
+      try {
+        const res = await apiFetch('/api/v1/admin/batches', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productId, batchNumber, quantity, price, expirationDays })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('Batch added successfully!');
+          document.getElementById('newBatchNumber').value = '';
+          loadBatchesTable();
+        } else {
+          alert('Failed to add batch: ' + (data.error || 'Unknown error'));
+        }
+      } catch (err) {
+        alert('Error creating batch: ' + err.message);
+      }
+    }
+
+    window.onload = () => {
+      const user = JSON.parse(localStorage.getItem('auth_user') || '{}');
+      if (user.name) document.getElementById('admUserName').innerText = `${user.name} (Admin)`;
+      loadAdminTelemetry();
+    };
+  </script>
+</body>
+</html>

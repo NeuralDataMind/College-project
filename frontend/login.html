@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | Smart Inventory Forecasting System</title>
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --card-bg: #1e293b;
+      --card-inner: #0f172a;
+      --border: #334155;
+      --primary: #38bdf8;
+      --primary-hover: #0284c7;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --success: #34d399;
+      --danger: #f87171;
+      --admin-color: #a78bfa;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: var(--bg-dark);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .login-box {
+      max-width: 480px;
+      width: 100%;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 36px 32px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      text-align: center;
+    }
+
+    .project-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--primary);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 0 0 6px;
+      letter-spacing: -0.01em;
+    }
+
+    p.subtitle {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin: 0 0 24px;
+      line-height: 1.4;
+    }
+
+    .section-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      text-align: left;
+    }
+
+    /* Fast Role Switch Cards */
+    .role-btn-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 10px;
+      background: var(--card-inner);
+      border: 1px solid var(--border);
+      color: var(--text);
+      cursor: pointer;
+      margin-bottom: 10px;
+      transition: all 0.2s ease;
+      text-align: left;
+    }
+    .role-btn-card:hover {
+      border-color: var(--primary);
+      background: #1e293b;
+      transform: translateY(-1px);
+    }
+    .role-avatar {
+      font-size: 1.8rem;
+      line-height: 1;
+    }
+    .role-info { flex: 1; }
+    .role-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin: 0;
+    }
+    .role-desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin: 2px 0 0;
+    }
+    .role-tag {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+    .tag-mgr { background: rgba(52, 211, 153, 0.2); color: var(--success); }
+    .tag-adm { background: rgba(167, 139, 250, 0.2); color: var(--admin-color); }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 20px 0;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .form-group {
+      text-align: left;
+      margin-bottom: 14px;
+    }
+    .form-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+    }
+    .form-input {
+      width: 100%;
+      background: var(--card-inner);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      outline: none;
+    }
+    .form-input:focus {
+      border-color: var(--primary);
+    }
+
+    .btn-submit {
+      width: 100%;
+      background: var(--primary);
+      color: #0f172a;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 6px;
+      transition: background 0.2s;
+    }
+    .btn-submit:hover {
+      background: var(--primary-hover);
+      color: white;
+    }
+
+    .alert-box {
+      margin-top: 14px;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: none;
+    }
+    .alert-err { background: rgba(248, 113, 113, 0.15); border: 1px solid rgba(248, 113, 113, 0.3); color: var(--danger); }
+    .alert-ok { background: rgba(52, 211, 153, 0.15); border: 1px solid rgba(52, 211, 153, 0.3); color: var(--success); }
+  </style>
+</head>
+<body>
+
+  <div class="login-box">
+    <div class="project-badge">Final Year Project • Quick-Commerce XAI</div>
+    <h1>Smart Inventory Forecasting System</h1>
+    <p class="subtitle">Explainable Demand Forecasting with XGBoost, TreeSHAP & FEFO Stock Management</p>
+
+    <div class="section-title">Select User Role to Sign In:</div>
+
+    <!-- Manager Account Card -->
+    <button type="button" class="role-btn-card" onclick="quickLogin('manager')">
+      <span class="role-avatar">👤</span>
+      <div class="role-info">
+        <div class="role-title">Store Operations Manager</div>
+        <div class="role-desc">Intraday demand forecast, stockout alerts, FEFO expiry</div>
+        <span class="role-tag tag-mgr">Username: manager</span>
+      </div>
+      <span style="color:var(--primary); font-weight:bold;">→</span>
+    </button>
+
+    <!-- Admin Account Card -->
+    <button type="button" class="role-btn-card" onclick="quickLogin('admin')">
+      <span class="role-avatar">⚙️</span>
+      <div class="role-info">
+        <div class="role-title">System & ML Admin</div>
+        <div class="role-desc">Model diagnostics, hyperparameter tuning & hot-retraining</div>
+        <span class="role-tag tag-adm">Username: admin</span>
+      </div>
+      <span style="color:var(--admin-color); font-weight:bold;">→</span>
+    </button>
+
+    <div class="divider">or manual login</div>
+
+    <!-- Manual Form -->
+    <form onsubmit="handleManualLogin(event)">
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input type="text" id="usernameInput" class="form-input" placeholder="manager or admin" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" id="passwordInput" class="form-input" placeholder="manager123 or admin123" required>
+      </div>
+
+      <button type="submit" class="btn-submit">Sign In</button>
+    </form>
+
+    <div id="loginAlert" class="alert-box"></div>
+  </div>
+
+  <script>
+    async function apiFetch(endpoint, options = {}) {
+      try {
+        return await fetch(`http://127.0.0.1:5000${endpoint}`, options);
+      } catch (err) {
+        return await fetch(`http://localhost:5000${endpoint}`, options);
+      }
+    }
+
+    function quickLogin(role) {
+      if (role === 'admin') {
+        document.getElementById('usernameInput').value = 'admin';
+        document.getElementById('passwordInput').value = 'admin123';
+      } else {
+        document.getElementById('usernameInput').value = 'manager';
+        document.getElementById('passwordInput').value = 'manager123';
+      }
+      executeLogin(document.getElementById('usernameInput').value, document.getElementById('passwordInput').value);
+    }
+
+    function handleManualLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById('usernameInput').value.trim();
+      const p = document.getElementById('passwordInput').value.trim();
+      executeLogin(u, p);
+    }
+
+    async function executeLogin(username, password) {
+      const alertBox = document.getElementById('loginAlert');
+      alertBox.style.display = 'block';
+      alertBox.className = 'alert-box alert-ok';
+      alertBox.innerText = 'Verifying credentials...';
+
+      try {
+        const response = await apiFetch('/api/v1/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || 'Invalid username or password');
+        }
+
+        // Store role session
+        localStorage.setItem('auth_role', data.user.role);
+        localStorage.setItem('auth_user', JSON.stringify(data.user));
+        localStorage.setItem('auth_token', data.token);
+
+        // Remove any legacy keys
+        localStorage.removeItem('apple_auth_role');
+        localStorage.removeItem('apple_auth_user');
+
+        alertBox.className = 'alert-box alert-ok';
+        alertBox.innerText = `✅ Logged in as ${data.user.name} (${data.user.role.toUpperCase()}). Loading portal...`;
+
+        setTimeout(() => {
+          if (data.user.role === 'admin') {
+            window.location.href = 'admin.html';
+          } else {
+            window.location.href = 'manager.html';
+          }
+        }, 500);
+
+      } catch (err) {
+        alertBox.className = 'alert-box alert-err';
+        alertBox.innerText = `❌ ${err.message}`;
+      }
+    }
+
+    window.onload = () => {
+      const existingRole = localStorage.getItem('auth_role');
+      if (existingRole === 'admin') {
+        window.location.href = 'admin.html';
+      } else if (existingRole === 'manager') {
+        window.location.href = 'manager.html';
+      }
+    };
+  </script>
+</body>
+</html>

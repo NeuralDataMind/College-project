@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Catalog & Explainable AI - Smart Inventory System</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-elevated: #273549;
+      --border: #334155;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --purple: #a855f7;
+      
+      --cat-dairy: #38bdf8;
+      --cat-produce: #34d399;
+      --cat-snacks: #fbbf24;
+      --cat-beverages: #c084fc;
+      --cat-meat: #f87171;
+
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* Top Navigation */
+    nav.top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(30, 41, 59, 0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-icon {
+      font-size: 1.5rem;
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-md);
+    }
+    .brand-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin: 0;
+      color: var(--text);
+    }
+    .brand-subtitle {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--surface-elevated);
+      color: var(--text);
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    .btn:hover { background: #334155; }
+    .btn.primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #ffffff;
+    }
+    .btn.primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: auto;
+      padding: 28px 24px 60px;
+    }
+
+    /* Scenario Bar */
+    .scenario-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .scenario-inputs {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+    .scenario-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .scenario-item select {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    /* KPI Summary Row */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .kpi-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+    }
+    .kpi-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+    .kpi-val {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin-top: 6px;
+    }
+    .kpi-sub {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+
+    /* Filter Controls */
+    .filter-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .category-pills {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .pill {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 7px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .pill.active, .pill:hover {
+      background: var(--surface-elevated);
+      color: var(--text);
+      border-color: #475569;
+    }
+    .pill.active {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: rgba(59, 130, 246, 0.12);
+    }
+    .search-input {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      min-width: 260px;
+      outline: none;
+    }
+    .search-input:focus { border-color: var(--primary); }
+
+    /* Products Grid */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+      gap: 20px;
+    }
+    .product-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+    .product-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .product-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin: 0;
+      color: var(--text);
+    }
+    .product-sku {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 3px;
+      font-family: monospace;
+    }
+    .cat-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .cat-badge.Dairy { background: rgba(56, 189, 248, 0.15); color: var(--cat-dairy); border: 1px solid var(--cat-dairy); }
+    .cat-badge.Produce { background: rgba(52, 211, 153, 0.15); color: var(--cat-produce); border: 1px solid var(--cat-produce); }
+    .cat-badge.Snacks { background: rgba(251, 191, 36, 0.15); color: var(--cat-snacks); border: 1px solid var(--cat-snacks); }
+    .cat-badge.Beverages { background: rgba(192, 132, 252, 0.15); color: var(--cat-beverages); border: 1px solid var(--cat-beverages); }
+    .cat-badge.Meat { background: rgba(248, 113, 113, 0.15); color: var(--cat-meat); border: 1px solid var(--cat-meat); }
+
+    .inventory-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      background: var(--surface-elevated);
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+    .stat-col-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .stat-col-val {
+      font-size: 1.35rem;
+      font-weight: 800;
+      margin-top: 2px;
+    }
+
+    .fefo-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      padding: 5px 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .badge-status {
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .badge-deficit {
+      background: rgba(239, 68, 68, 0.18);
+      color: var(--danger);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+    }
+    .badge-optimal {
+      background: rgba(16, 185, 129, 0.18);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+
+    .xai-narrative {
+      background: var(--surface-elevated);
+      border-left: 3px solid var(--primary);
+      padding: 10px 14px;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      font-size: 0.82rem;
+      line-height: 1.45;
+      color: #e2e8f0;
+    }
+    .xai-title {
+      font-weight: 700;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 4px;
+      letter-spacing: 0.04em;
+    }
+
+    .chart-container {
+      height: 140px;
+      position: relative;
+    }
+
+    .loading-overlay {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+      font-size: 1.05rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Clean Top Navigation -->
+  <nav class="top-nav">
+    <div class="brand-section">
+      <span class="brand-icon">📦</span>
+      <div>
+        <h2 class="brand-title">Product Catalog & Explainable AI</h2>
+        <p class="brand-subtitle">Final Year Project - Multi-Product Demand Forecasting</p>
+      </div>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <button class="btn" onclick="goBackToPortal()">⬅️ Back to Dashboard</button>
+      <button class="btn" onclick="window.print()">🖨️ Export PDF</button>
+      <button class="btn primary" onclick="loadCatalogData()">🔄 Refresh</button>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- Global Scenario Simulator -->
+    <div class="scenario-bar">
+      <div class="scenario-inputs">
+        <span style="font-weight:700; font-size:0.9rem;">Simulate Scenario:</span>
+        <div class="scenario-item">
+          <label for="timeSelect">Time of Day:</label>
+          <select id="timeSelect" onchange="loadCatalogData()">
+            <option value="19" selected>19:00 (Dinner Peak)</option>
+            <option value="13">13:00 (Lunch Spike)</option>
+            <option value="9">09:00 (Morning Rush)</option>
+            <option value="16">16:00 (Afternoon)</option>
+            <option value="23">23:00 (Late Night)</option>
+          </select>
+        </div>
+        <div class="scenario-item">
+          <label for="weekendSelect">Day Type:</label>
+          <select id="weekendSelect" onchange="loadCatalogData()">
+            <option value="1" selected>Weekend (High Surge)</option>
+            <option value="0">Weekday (Standard Baseline)</option>
+          </select>
+        </div>
+      </div>
+      <span id="lastUpdated" style="font-size: 0.8rem; color: var(--text-muted);">Syncing catalog telemetry...</span>
+    </div>
+
+    <!-- Summary KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Catalog Products</div>
+        <div class="kpi-val" id="kpiTotalProducts">12 SKUs</div>
+        <div class="kpi-sub">5 Quick-Commerce Categories</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Total Store Demand</div>
+        <div class="kpi-val" id="kpiTotalDemand" style="color:var(--warning);">-- units</div>
+        <div class="kpi-sub">XGBoost Forecast Sum</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Current Warehouse Stock</div>
+        <div class="kpi-val" id="kpiTotalStock" style="color:var(--primary);">-- units</div>
+        <div class="kpi-sub">Available FEFO Batches</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Stockout Deficit Items</div>
+        <div class="kpi-val" id="kpiDeficitCount" style="color:var(--danger);">--</div>
+        <div class="kpi-sub" id="kpiRestockTotal">Total restock needed: -- units</div>
+      </div>
+    </div>
+
+    <!-- Filter & Search Bar -->
+    <div class="filter-bar">
+      <div class="category-pills">
+        <button class="pill active" onclick="setCategoryFilter('ALL')">All Categories (12)</button>
+        <button class="pill" onclick="setCategoryFilter('Dairy')">Dairy (3)</button>
+        <button class="pill" onclick="setCategoryFilter('Produce')">Produce (3)</button>
+        <button class="pill" onclick="setCategoryFilter('Snacks')">Snacks (2)</button>
+        <button class="pill" onclick="setCategoryFilter('Beverages')">Beverages (2)</button>
+        <button class="pill" onclick="setCategoryFilter('Meat')">Meat (2)</button>
+      </div>
+      <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search product or SKU..." oninput="filterCards()">
+    </div>
+
+    <!-- Products Grid Container -->
+    <div id="loadingBox" class="loading-overlay">⏳ Loading complete catalog forecasts & SHAP explanations...</div>
+    <div class="products-grid" id="productsGrid" style="display:none;"></div>
+  </div>
+
+  <script>
+    let allCatalogItems = [];
+    let activeCategory = 'ALL';
+    let chartInstances = {};
+
+    function goBackToPortal() {
+      const role = localStorage.getItem('auth_role');
+      if (role === 'admin') {
+        window.location.href = 'admin.html';
+      } else if (role === 'manager') {
+        window.location.href = 'manager.html';
+      } else {
+        window.location.href = 'login.html';
+      }
+    }
+
+    async function loadCatalogData() {
+      const timeOfDay = document.getElementById('timeSelect').value;
+      const isWeekend = document.getElementById('weekendSelect').value;
+
+      document.getElementById('loadingBox').style.display = 'block';
+      document.getElementById('productsGrid').style.display = 'none';
+
+      try {
+        let response;
+        try {
+          response = await fetch(`http://127.0.0.1:5000/api/v1/forecast-all?time_of_day=${timeOfDay}&is_weekend=${isWeekend}`);
+        } catch (netErr) {
+          response = await fetch(`http://localhost:5000/api/v1/forecast-all?time_of_day=${timeOfDay}&is_weekend=${isWeekend}`);
+        }
+        if (!response.ok) throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
+        
+        const data = await response.json();
+        allCatalogItems = data.items || [];
+        
+        updateKPIs(allCatalogItems);
+        renderProductCards(allCatalogItems);
+
+        document.getElementById('loadingBox').style.display = 'none';
+        document.getElementById('productsGrid').style.display = 'grid';
+        document.getElementById('lastUpdated').innerText = `Synced at ${new Date().toLocaleTimeString()} (Scenario: ${timeOfDay}:00h, ${isWeekend === '1' ? 'Weekend' : 'Weekday'})`;
+      } catch (err) {
+        document.getElementById('loadingBox').innerHTML = `❌ Failed to load catalog from backend: ${err.message}<br><small style="color:#94a3b8">Make sure both ML Microservice (port 8000) and Express Backend (port 5000) are running.</small>`;
+      }
+    }
+
+    function updateKPIs(items) {
+      let totalDemand = 0;
+      let totalStock = 0;
+      let deficitCount = 0;
+      let restockTotal = 0;
+
+      items.forEach(item => {
+        totalDemand += item.predictedDemand;
+        totalStock += item.currentStock;
+        if (item.alerts && item.alerts.stockoutWarning) {
+          deficitCount++;
+          restockTotal += item.alerts.restockQuantity;
+        }
+      });
+
+      document.getElementById('kpiTotalProducts').innerText = `${items.length} SKUs`;
+      document.getElementById('kpiTotalDemand').innerText = `${totalDemand} units`;
+      document.getElementById('kpiTotalStock').innerText = `${totalStock} units`;
+      document.getElementById('kpiDeficitCount').innerText = `${deficitCount} SKUs`;
+      document.getElementById('kpiRestockTotal').innerText = `Total restock needed: ${restockTotal} units`;
+    }
+
+    function setCategoryFilter(cat) {
+      activeCategory = cat;
+      document.querySelectorAll('.category-pills .pill').forEach(btn => {
+        const text = btn.innerText;
+        btn.classList.toggle('active', (cat === 'ALL' && text.startsWith('All')) || text.startsWith(cat));
+      });
+      filterCards();
+    }
+
+    function filterCards() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+      const filtered = allCatalogItems.filter(item => {
+        const matchCat = (activeCategory === 'ALL' || item.category === activeCategory);
+        const matchSearch = (!searchTerm || item.productName.toLowerCase().includes(searchTerm) || item.productId.toLowerCase().includes(searchTerm));
+        return matchCat && matchSearch;
+      });
+      renderProductCards(filtered);
+    }
+
+    function renderProductCards(items) {
+      Object.values(chartInstances).forEach(chart => { if (chart) chart.destroy(); });
+      chartInstances = {};
+
+      const grid = document.getElementById('productsGrid');
+      grid.innerHTML = '';
+
+      if (items.length === 0) {
+        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;">No products match your filter criteria.</div>';
+        return;
+      }
+
+      items.forEach((item, index) => {
+        const isDeficit = item.alerts && item.alerts.stockoutWarning;
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.id = `card-${item.productId}`;
+
+        const chartCanvasId = `shapChart-${index}`;
+
+        card.innerHTML = `
+          <div class="product-header">
+            <div>
+              <h3 class="product-name">${item.productName}</h3>
+              <div class="product-sku">${item.productId} • $${item.price.toFixed(2)}</div>
+            </div>
+            <span class="cat-badge ${item.category}">${item.category}</span>
+          </div>
+
+          <div class="inventory-stats">
+            <div class="stat-col">
+              <span class="stat-col-label">Current Stock</span>
+              <span class="stat-col-val" style="color:var(--primary);">${item.currentStock}</span>
+            </div>
+            <div class="stat-col">
+              <span class="stat-col-label">Forecast Demand</span>
+              <span class="stat-col-val" style="color:var(--warning);">${item.predictedDemand}</span>
+            </div>
+          </div>
+
+          <div>
+            <div class="fefo-row">
+              <span>FEFO Batch: <strong>${item.fefoStatus.nearestBatch}</strong></span>
+              <span>Expires in: <strong>${item.fefoStatus.daysRemaining} days</strong></span>
+            </div>
+            <div class="fefo-row">
+              <span>Inventory Status:</span>
+              <span class="badge-status ${isDeficit ? 'badge-deficit' : 'badge-optimal'}">
+                ${isDeficit ? `⚠️ DEFICIT (-${item.alerts.restockQuantity} units)` : '✅ OPTIMAL STOCK'}
+              </span>
+            </div>
+          </div>
+
+          <div class="xai-narrative">
+            <div class="xai-title">🤖 Explainable AI Insights (TreeSHAP)</div>
+            <div>${item.explanationNarrative || 'Local feature contributions calculated.'}</div>
+          </div>
+
+          <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">
+            Top Feature Drivers:
+          </div>
+          <div class="chart-container">
+            <canvas id="${chartCanvasId}"></canvas>
+          </div>
+        `;
+
+        grid.appendChild(card);
+
+        setTimeout(() => {
+          renderMiniShapChart(chartCanvasId, item.explainability ? item.explainability.shapAttributions : {});
+        }, 0);
+      });
+    }
+
+    function renderMiniShapChart(canvasId, attributions) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+
+      const entries = Object.entries(attributions || {})
+        .filter(([k, v]) => Math.abs(v) > 0.5)
+        .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))
+        .slice(0, 5);
+
+      const labels = entries.map(e => e[0].replace('category_', 'Cat: ').replace(/_/g, ' '));
+      const values = entries.map(e => e[1]);
+
+      chartInstances[canvasId] = new Chart(canvas, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: values,
+            backgroundColor: values.map(v => v >= 0 ? '#10b981' : '#f59e0b'),
+            borderRadius: 4
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              ticks: { color: '#94a3b8', font: { size: 10 } },
+              grid: { color: 'rgba(255, 255, 255, 0.05)' }
+            },
+            y: {
+              ticks: { color: '#f8fafc', font: { size: 10 } },
+              grid: { display: false }
+            }
+          }
+        }
+      });
+    }
+
+    window.onload = loadCatalogData;
+  </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+category,productId,time_of_day,price,historical_demand,is_weekend,current_stock
+Dairy,Dairy_Milk_1L,19,14.5,140,1,100
+Dairy,Dairy_Paneer_200g,18,18.0,90,1,30
+Produce,Produce_Tomatoes_500g,13,8.5,180,0,120
+Produce,Produce_Bananas_1dz,14,10.0,160,0,50
+Snacks,Snacks_Chips_100g,20,6.0,220,1,200
+Beverages,Beverages_ColdDrink_2L,21,15.0,110,1,60
+Meat,Meat_Chicken_500g,19,28.0,130,1,40

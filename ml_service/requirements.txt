@@ -1,0 +1,9 @@
+xgboost
+shap
+pandas
+numpy
+joblib
+fastapi
+uvicorn
+pydantic
+python-multipart

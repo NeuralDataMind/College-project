@@ -1,0 +1,127 @@
+# ========================================================
+# Git Ignore Configuration
+# Smart Inventory Forecasting & FEFO System
+# ========================================================
+
+# --------------------------------------------------------
+# 1. Python & Virtual Environments
+# --------------------------------------------------------
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyd
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Unit test / coverage
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# --------------------------------------------------------
+# 2. Node.js & Backend Gateway
+# --------------------------------------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Uploads directory (preserve folder, ignore user uploads)
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# --------------------------------------------------------
+# 3. Environment Variables & Credentials
+# --------------------------------------------------------
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+*.key
+*.cert
+
+# --------------------------------------------------------
+# 4. Logs & Temp Files
+# --------------------------------------------------------
+*.log
+logs/
+temp/
+tmp/
+
+# --------------------------------------------------------
+# 5. Operating System Specific
+# --------------------------------------------------------
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Linux
+*~
+
+# --------------------------------------------------------
+# 6. IDEs & Editors
+# --------------------------------------------------------
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.sublime-workspace
+*.sublime-project
+*.swp
+*.swo

@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Store Operations | Smart Inventory Forecasting</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --card-bg: #1e293b;
+      --card-inner: #0f172a;
+      --border: #334155;
+      --primary: #38bdf8;
+      --primary-hover: #0284c7;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --success: #34d399;
+      --danger: #f87171;
+      --warning: #fb923c;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: var(--bg-dark);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    nav.navbar {
+      background: #1e293b;
+      border-bottom: 1px solid var(--border);
+      padding: 12px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin: 0;
+    }
+    .role-tag {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(52, 211, 153, 0.15);
+      color: var(--success);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+      text-transform: uppercase;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--card-bg);
+      color: var(--text);
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn:hover { background: #334155; }
+    .btn-primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #0f172a;
+    }
+    .btn-primary:hover { background: var(--primary-hover); color: white; }
+    .btn-danger {
+      color: var(--danger);
+      border-color: rgba(248, 113, 113, 0.3);
+    }
+    .btn-danger:hover { background: rgba(248, 113, 113, 0.15); }
+
+    .main-wrap {
+      max-width: 1300px;
+      margin: auto;
+      padding: 24px 24px 60px;
+    }
+
+    /* Tabs */
+    .tabs-wrapper {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    .tab-btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--card-bg);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background: var(--primary);
+      color: #0f172a;
+      border-color: var(--primary);
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .card-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin: 0;
+    }
+    .card-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin: 3px 0 0;
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+    }
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .input-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+    .form-select, .form-input {
+      background: var(--card-inner);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      outline: none;
+    }
+    .form-select:focus, .form-input:focus {
+      border-color: var(--primary);
+    }
+
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .kpi-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+    }
+    .kpi-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+    .kpi-val {
+      font-size: 1.8rem;
+      font-weight: 800;
+      margin-top: 4px;
+      color: var(--primary);
+    }
+    .kpi-sub {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .alert-banner {
+      background: rgba(248, 113, 113, 0.15);
+      border: 1px solid rgba(248, 113, 113, 0.35);
+      color: #fca5a5;
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+      gap: 20px;
+    }
+    .chart-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+    }
+
+    .dropzone {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 32px 20px;
+      text-align: center;
+      background: var(--card-inner);
+      cursor: pointer;
+      margin-bottom: 16px;
+    }
+    .dropzone:hover {
+      border-color: var(--primary);
+    }
+
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+    }
+    table.data-table th {
+      padding: 10px 12px;
+      text-align: left;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+    }
+    table.data-table td {
+      padding: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    table.data-table tr:hover td {
+      background: rgba(255, 255, 255, 0.03);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="brand-section">
+      <span style="font-size: 1.4rem;">📦</span>
+      <div>
+        <h2 class="brand-title">Smart Inventory Forecasting</h2>
+      </div>
+      <span class="role-tag">Store Operations</span>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:10px;">
+      <a href="all-products.html" target="_blank" class="btn">
+        <span>📊</span> View All Products Catalog ↗
+      </a>
+      <div style="display:flex; align-items:center; gap:6px; background:var(--card-inner); padding:6px 12px; border-radius:8px; border:1px solid var(--border); font-size:0.85rem;">
+        <span>👤</span>
+        <span id="mgrUserName" style="font-weight:600;">Sarah Chen (Manager)</span>
+      </div>
+      <button class="btn btn-danger" onclick="signOut()">Sign Out</button>
+    </div>
+  </nav>
+
+  <div class="main-wrap">
+    <!-- Mode Tabs -->
+    <div class="tabs-wrapper">
+      <button class="tab-btn active" id="tabBtnSingle" onclick="switchTab('single')">
+        Single Product Forecaster
+      </button>
+      <button class="tab-btn" id="tabBtnBatch" onclick="switchTab('batch')">
+        Batch CSV Warehouse Uploader
+      </button>
+    </div>
+
+    <!-- TAB 1: SINGLE FORECAST -->
+    <div id="tabSingle">
+      <div class="card">
+        <div class="card-header-row">
+          <div>
+            <h3 class="card-title">Intraday Demand Forecast (XGBoost + SHAP)</h3>
+            <p class="card-subtitle">Real-time demand prediction with First-Expiring-First-Out (FEFO) warehouse inventory</p>
+          </div>
+          <button class="btn btn-primary" onclick="runSingleForecast()">
+            Compute Forecast
+          </button>
+        </div>
+
+        <div class="controls-grid">
+          <div class="input-group">
+            <label class="input-label">Product Category</label>
+            <select id="categorySelect" class="form-select" onchange="updateProductDropdown()">
+              <option value="Dairy" selected>Dairy</option>
+              <option value="Produce">Produce</option>
+              <option value="Snacks">Snacks</option>
+              <option value="Beverages">Beverages</option>
+              <option value="Meat">Meat</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Product SKU</label>
+            <select id="productSelect" class="form-select"></select>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Hour of Day (0 - 23h)</label>
+            <input type="number" id="timeOfDay" class="form-input" min="0" max="23" value="19">
+          </div>
+          <div class="input-group">
+            <label class="input-label">Price ($)</label>
+            <input type="number" id="priceInput" class="form-input" step="0.5" min="1" max="100" value="14.5">
+          </div>
+          <div class="input-group">
+            <label class="input-label">Historical Demand (Units)</label>
+            <input type="number" id="histDemand" class="form-input" min="1" max="500" value="140">
+          </div>
+          <div class="input-group">
+            <label class="input-label">Is Weekend?</label>
+            <select id="isWeekend" class="form-select">
+              <option value="1" selected>Yes (Surge Boost)</option>
+              <option value="0">No (Standard Day)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div id="alertBanner" class="alert-banner" style="display:none;"></div>
+
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-label">Current Warehouse Stock</div>
+          <div class="kpi-val" id="statStock">--</div>
+          <div class="kpi-sub">Total Available Units</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Predicted Demand</div>
+          <div class="kpi-val" id="statDemand" style="color: var(--warning);">--</div>
+          <div class="kpi-sub">XGBoost Integer Forecast</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Nearest FEFO Batch</div>
+          <div class="kpi-val" id="statBatch" style="font-size: 1.25rem; color: #ffffff;">--</div>
+          <div class="kpi-sub" id="statDaysRemaining">Days remaining: --</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Restock Status</div>
+          <div class="kpi-val" id="statRestock" style="color: var(--success);">0 units</div>
+          <div class="kpi-sub" id="statRestockStatus">Stock level optimal</div>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-box">
+          <h4 style="margin:0 0 12px; font-size: 0.95rem;">Stock vs Predicted Demand</h4>
+          <canvas id="demandChart" style="max-height: 270px;"></canvas>
+        </div>
+        <div class="chart-box">
+          <h4 style="margin:0 0 12px; font-size: 0.95rem;">SHAP Feature Contribution (XAI)</h4>
+          <canvas id="shapChart" style="max-height: 270px;"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: BATCH CSV UPLOAD -->
+    <div id="tabBatch" style="display:none;">
+      <div class="card">
+        <div class="card-header-row">
+          <div>
+            <h3 class="card-title">Dark Store Multi-SKU CSV Processing</h3>
+            <p class="card-subtitle">Upload warehouse inventory CSV to generate batch predictions and detect deficits</p>
+          </div>
+          <button class="btn" onclick="loadSampleWarehouseData()">⚡ Load Sample CSV</button>
+        </div>
+
+        <div class="dropzone" onclick="document.getElementById('csvFileInput').click()">
+          <input type="file" id="csvFileInput" accept=".csv" style="display:none;" onchange="handleFileChosen()">
+          <div style="font-size: 2rem; margin-bottom: 6px;">📂</div>
+          <h4 style="margin: 0 0 4px;">Select or drop Warehouse Inventory CSV</h4>
+          <p id="fileNameDisplay" style="margin: 0; color: var(--text-muted); font-size: 0.85rem;">
+            Upload CSV with category, productId, price, and current_stock columns
+          </p>
+          <div style="margin-top: 12px;">
+            <button class="btn btn-primary" onclick="event.stopPropagation(); uploadBatchCSV()">Upload & Process</button>
+          </div>
+        </div>
+
+        <div id="batchTableContainer" style="display:none; margin-top: 20px;">
+          <h4 style="margin-bottom: 10px;">Processed Warehouse SKUs</h4>
+          <div style="overflow-x: auto;">
+            <table class="data-table" id="batchTable">
+              <thead>
+                <tr>
+                  <th>Product SKU</th>
+                  <th>Category</th>
+                  <th>Stock</th>
+                  <th>Predicted Demand</th>
+                  <th>FEFO Batch</th>
+                  <th>Days Left</th>
+                  <th>Status</th>
+                  <th>Restock Needed</th>
+                </tr>
+              </thead>
+              <tbody id="batchTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Role Security Guard
+    const authRole = localStorage.getItem('auth_role');
+    if (!authRole) {
+      window.location.href = 'login.html';
+    }
+
+    const productsByCategory = {
+      'Dairy': ['Dairy_Milk_1L', 'Dairy_Paneer_200g', 'Dairy_Curd_500g'],
+      'Produce': ['Produce_Tomatoes_500g', 'Produce_Onions_1kg', 'Produce_Bananas_1dz'],
+      'Snacks': ['Snacks_Chips_100g', 'Snacks_Biscuits_200g'],
+      'Beverages': ['Beverages_ColdDrink_2L', 'Beverages_Juice_1L'],
+      'Meat': ['Meat_Chicken_500g', 'Meat_Eggs_6pack']
+    };
+
+    let demandChart = null;
+    let shapChart = null;
+
+    async function apiFetch(endpoint, options = {}) {
+      try {
+        return await fetch(`http://127.0.0.1:5000${endpoint}`, options);
+      } catch (err) {
+        return await fetch(`http://localhost:5000${endpoint}`, options);
+      }
+    }
+
+    function signOut() {
+      localStorage.clear();
+      window.location.href = 'login.html';
+    }
+
+    function switchTab(t) {
+      document.getElementById('tabBtnSingle').classList.toggle('active', t === 'single');
+      document.getElementById('tabBtnBatch').classList.toggle('active', t === 'batch');
+      document.getElementById('tabSingle').style.display = (t === 'single') ? 'block' : 'none';
+      document.getElementById('tabBatch').style.display = (t === 'batch') ? 'block' : 'none';
+    }
+
+    function updateProductDropdown() {
+      const cat = document.getElementById('categorySelect').value;
+      const prodSelect = document.getElementById('productSelect');
+      prodSelect.innerHTML = '';
+      (productsByCategory[cat] || []).forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p;
+        opt.innerText = p;
+        prodSelect.appendChild(opt);
+      });
+    }
+
+    async function runSingleForecast() {
+      const category = document.getElementById('categorySelect').value;
+      const productId = document.getElementById('productSelect').value;
+      const time_of_day = parseInt(document.getElementById('timeOfDay').value, 10);
+      const price = parseFloat(document.getElementById('priceInput').value);
+      const historical_demand = parseInt(document.getElementById('histDemand').value, 10);
+      const is_weekend = parseInt(document.getElementById('isWeekend').value, 10);
+
+      try {
+        const response = await apiFetch('/api/v1/forecast-and-stock', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ category, productId, time_of_day, price, historical_demand, is_weekend })
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        renderResult(data);
+      } catch (err) {
+        alert('Forecast error: ' + err.message);
+      }
+    }
+
+    function renderResult(data) {
+      const currentStock = Math.round(data.currentStock);
+      const predictedDemand = Math.round(data.predictedDemand);
+      const restockQty = Math.round(data.alerts.restockQuantity);
+
+      document.getElementById('statStock').innerText = currentStock + ' units';
+      document.getElementById('statDemand').innerText = predictedDemand + ' units';
+      document.getElementById('statBatch').innerText = data.fefoStatus.nearestBatch || 'N/A';
+      document.getElementById('statDaysRemaining').innerText = `Expires in ${data.fefoStatus.daysRemaining} days`;
+
+      const alertBanner = document.getElementById('alertBanner');
+      const statRestock = document.getElementById('statRestock');
+      const statRestockStatus = document.getElementById('statRestockStatus');
+
+      if (data.alerts.stockoutWarning) {
+        statRestock.innerText = restockQty + ' units';
+        statRestock.style.color = 'var(--danger)';
+        statRestockStatus.innerText = 'Deficit detected - Restock!';
+
+        alertBanner.style.display = 'flex';
+        alertBanner.innerHTML = `⚠️ <span><strong>RESTOCK DEFICIT (${data.productId}):</strong> Current stock (${currentStock}) is below forecast (${predictedDemand}). Restock <strong>${restockQty} units</strong> immediately. Batch ${data.fefoStatus.nearestBatch} expires in ${data.fefoStatus.daysRemaining} days.</span>`;
+      } else {
+        statRestock.innerText = '0 units';
+        statRestock.style.color = 'var(--success)';
+        statRestockStatus.innerText = 'Inventory optimal';
+        alertBanner.style.display = 'none';
+      }
+
+      if (demandChart) demandChart.destroy();
+      demandChart = new Chart(document.getElementById('demandChart'), {
+        type: 'bar',
+        data: {
+          labels: ['Current Stock', 'Forecast Demand'],
+          datasets: [{
+            data: [currentStock, predictedDemand],
+            backgroundColor: ['#38bdf8', '#f43f5e'],
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, ticks: { color: '#94a3b8', precision: 0 }, grid: { color: '#334155' } },
+            x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
+          }
+        }
+      });
+
+      const rawAttributions = data.explainability.shapAttributions || {};
+      const sortedEntries = Object.entries(rawAttributions)
+        .filter(([k, v]) => Math.abs(v) > 0.001)
+        .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]));
+
+      const topEntries = sortedEntries.slice(0, 8);
+      const keys = topEntries.map(e => e[0].replace('category_', 'Cat: ').replace('product_id_', 'SKU: '));
+      const values = topEntries.map(e => e[1]);
+
+      if (shapChart) shapChart.destroy();
+      shapChart = new Chart(document.getElementById('shapChart'), {
+        type: 'bar',
+        data: {
+          labels: keys,
+          datasets: [{
+            label: 'SHAP Contribution',
+            data: values,
+            backgroundColor: values.map(v => v >= 0 ? '#34d399' : '#fb923c'),
+            borderRadius: 4
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
+            y: { ticks: { color: '#ffffff', autoSkip: false }, grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    function handleFileChosen() {
+      const fileInput = document.getElementById('csvFileInput');
+      const nameDisplay = document.getElementById('fileNameDisplay');
+      if (fileInput.files.length > 0) nameDisplay.innerText = `Selected: ${fileInput.files[0].name}`;
+    }
+
+    async function uploadBatchCSV() {
+      const fileInput = document.getElementById('csvFileInput');
+      if (fileInput.files.length === 0) {
+        loadSampleWarehouseData();
+        return;
+      }
+      const formData = new FormData();
+      formData.append('warehouseData', fileInput.files[0]);
+
+      try {
+        const response = await apiFetch('/api/v1/forecast-batch', { method: 'POST', body: formData });
+        const data = await response.json();
+        renderBatchResults(data.items);
+      } catch (err) {
+        alert('Batch upload error: ' + err.message);
+      }
+    }
+
+    async function loadSampleWarehouseData() {
+      const sampleItems = [
+        { category: 'Dairy', productId: 'Dairy_Milk_1L', time_of_day: 19, price: 14.5, historical_demand: 140, is_weekend: 1, current_stock: 100 },
+        { category: 'Dairy', productId: 'Dairy_Paneer_200g', time_of_day: 18, price: 18.0, historical_demand: 90, is_weekend: 1, current_stock: 30 },
+        { category: 'Produce', productId: 'Produce_Tomatoes_500g', time_of_day: 13, price: 8.5, historical_demand: 180, is_weekend: 0, current_stock: 120 },
+        { category: 'Produce', productId: 'Produce_Bananas_1dz', time_of_day: 14, price: 10.0, historical_demand: 160, is_weekend: 0, current_stock: 50 },
+        { category: 'Snacks', productId: 'Snacks_Chips_100g', time_of_day: 20, price: 6.0, historical_demand: 220, is_weekend: 1, current_stock: 200 },
+        { category: 'Beverages', productId: 'Beverages_ColdDrink_2L', time_of_day: 21, price: 15.0, historical_demand: 110, is_weekend: 1, current_stock: 60 },
+        { category: 'Meat', productId: 'Meat_Chicken_500g', time_of_day: 19, price: 28.0, historical_demand: 130, is_weekend: 1, current_stock: 40 }
+      ];
+
+      try {
+        const response = await apiFetch('/api/v1/forecast-batch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items: sampleItems })
+        });
+        const data = await response.json();
+        renderBatchResults(data.items);
+      } catch (err) {
+        alert('Sample error: ' + err.message);
+      }
+    }
+
+    function renderBatchResults(items) {
+      document.getElementById('batchTableContainer').style.display = 'block';
+      const tbody = document.getElementById('batchTableBody');
+      tbody.innerHTML = '';
+
+      items.forEach((item) => {
+        const tr = document.createElement('tr');
+        const isAlert = item.alerts.stockoutWarning;
+        tr.innerHTML = `
+          <td><strong>${item.productId}</strong></td>
+          <td>${item.category}</td>
+          <td>${Math.round(item.currentStock)}</td>
+          <td style="color:var(--primary); font-weight:bold;">${Math.round(item.predictedDemand)}</td>
+          <td>${item.fefoStatus.nearestBatch || 'N/A'}</td>
+          <td>${item.fefoStatus.daysRemaining} d</td>
+          <td><span style="font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:4px; background:${isAlert ? 'rgba(248,113,113,0.2)' : 'rgba(52,211,153,0.2)'}; color:${isAlert ? 'var(--danger)' : 'var(--success)'};">${isAlert ? 'DEFICIT' : 'OPTIMAL'}</span></td>
+          <td style="color:${isAlert ? 'var(--warning)' : 'inherit'}; font-weight:${isAlert ? '700' : 'normal'};">
+            ${isAlert ? Math.round(item.alerts.restockQuantity) + ' units' : 'None'}
+          </td>
+        `;
+        tr.onclick = () => {
+          switchTab('single');
+          renderResult(item);
+        };
+        tbody.appendChild(tr);
+      });
+    }
+
+    window.onload = () => {
+      const user = JSON.parse(localStorage.getItem('auth_user') || '{}');
+      if (user.name) document.getElementById('mgrUserName').innerText = `${user.name} (Manager)`;
+      updateProductDropdown();
+      runSingleForecast();
+    };
+  </script>
+</body>
+</html>

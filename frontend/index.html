@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Inventory & FEFO Forecasting System</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --primary: #3b82f6;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #334155;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      text-align: center;
+      padding: 20px;
+    }
+    .logo-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      background: linear-scale-gradient, #2563eb;
+      background: #2563eb;
+      color: #ffffff;
+      font-size: 1.6rem;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+    }
+    h2 { font-weight: 700; margin: 0 0 8px; font-size: 1.4rem; }
+    p { color: var(--text-muted); font-size: 0.95rem; margin: 0 0 24px; }
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 3px solid rgba(255, 255, 255, 0.15);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .portal-links {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    a.btn {
+      display: inline-block;
+      padding: 10px 20px;
+      border-radius: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    a.btn:hover { background: #334155; }
+    a.btn.primary { background: #2563eb; border-color: #2563eb; }
+  </style>
+</head>
+<body>
+  <div class="logo-badge">📦</div>
+  <div class="spinner"></div>
+  <h2>Routing to Workspace</h2>
+  <p>Verifying role authorization and opening project dashboard...</p>
+
+  <div class="portal-links">
+    <a href="login.html" class="btn primary">Sign In Portal</a>
+    <a href="manager.html" class="btn">Store Operations</a>
+    <a href="admin.html" class="btn">ML Platform Admin</a>
+  </div>
+
+  <script>
+    const role = localStorage.getItem('auth_role');
+    if (role === 'admin') {
+      window.location.replace('admin.html');
+    } else if (role === 'manager') {
+      window.location.replace('manager.html');
+    } else {
+      window.location.replace('login.html');
+    }
+  </script>
+</body>
+</html>
